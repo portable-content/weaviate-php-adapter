@@ -1,0 +1,1 @@
+# weaviate-php-adapter
