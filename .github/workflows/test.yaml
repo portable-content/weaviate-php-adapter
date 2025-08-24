@@ -84,28 +84,36 @@ jobs:
 
     - name: Start Weaviate
       run: |
-        echo "Starting Weaviate container..."
-        docker run -d \
-          --name weaviate-test \
-          -p 8080:8080 \
-          -e QUERY_DEFAULTS_LIMIT=25 \
-          -e AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true \
-          -e PERSISTENCE_DATA_PATH=/var/lib/weaviate \
-          -e DEFAULT_VECTORIZER_MODULE=none \
-          -e ENABLE_MODULES= \
-          -e CLUSTER_HOSTNAME=node1 \
-          -e LOG_LEVEL=info \
-          semitechnologies/weaviate:1.25.0
-
-        echo "Waiting for Weaviate to be ready..."
-        timeout 120 bash -c 'until wget --quiet --tries=1 --spider http://localhost:8080/v1/schema; do echo "Waiting for Weaviate..."; sleep 3; done'
-        echo "Weaviate is ready!"
+        docker compose up -d weaviate
+        # Wait for Weaviate to be ready (increased timeout for cluster initialization)
+        timeout=120
+        counter=0
+        echo "Starting Weaviate and waiting for cluster initialization..."
+        while [ $counter -lt $timeout ]; do
+          if curl -f http://localhost:8080/v1/.well-known/ready > /dev/null 2>&1; then
+            echo "Weaviate is ready!"
+            break
+          fi
+          sleep 2
+          counter=$((counter + 2))
+          echo "Waiting for Weaviate... ($counter/${timeout}s)"
+        done
+        if [ $counter -ge $timeout ]; then
+          echo "Weaviate failed to start within ${timeout} seconds"
+          echo "Showing Weaviate logs for debugging:"
+          docker compose logs weaviate
+          echo "Checking container status:"
+          docker compose ps
+          exit 1
+        fi
 
     - name: Verify Weaviate connection
       run: |
         echo "Testing Weaviate connection..."
-        wget -O- http://localhost:8080/v1/schema
-        echo "Weaviate connection verified!"
+        curl -f http://localhost:8080/v1/.well-known/ready
+        echo "Weaviate readiness verified!"
+        curl -f http://localhost:8080/v1/schema
+        echo "Weaviate schema endpoint verified!"
 
     - name: Run integration tests
       run: composer test:integration
@@ -118,16 +126,15 @@ jobs:
       if: failure()
       run: |
         echo "Integration tests failed. Checking Weaviate logs..."
-        docker logs weaviate-test || echo "No Weaviate container logs available"
+        docker compose logs weaviate || echo "No Weaviate container logs available"
         echo "Checking container status..."
-        docker ps -a
+        docker compose ps
 
     - name: Cleanup Weaviate
       if: always()
       run: |
-        echo "Cleaning up Weaviate container..."
-        docker stop weaviate-test || true
-        docker rm weaviate-test || true
+        echo "Cleaning up Weaviate containers..."
+        docker compose down -v || true
 
     - name: Upload integration test coverage artifacts
       if: matrix.php-version == '8.3'
