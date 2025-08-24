@@ -1,0 +1,134 @@
+name: Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php-version: ['8.3', '8.4']
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP ${{ matrix.php-version }}
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+        extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_sqlite, dom, filter, gd, json
+        coverage: xdebug
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v4
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-${{ matrix.php-version }}-
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: Run unit tests
+      run: composer test:unit
+
+    - name: Run unit tests with coverage
+      if: matrix.php-version == '8.3'
+      run: XDEBUG_MODE=coverage ./vendor/bin/phpunit --testsuite=Unit --coverage-clover coverage-unit.xml
+
+    - name: Upload unit test coverage artifacts
+      if: matrix.php-version == '8.3'
+      uses: actions/upload-artifact@v4
+      with:
+        name: unit-coverage
+        path: coverage-unit.xml
+        retention-days: 1
+
+  integration-tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php-version: ['8.3', '8.4']
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP ${{ matrix.php-version }}
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+        extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_sqlite, dom, filter, gd, json
+        coverage: xdebug
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v4
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-${{ matrix.php-version }}-
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: Run integration tests
+      run: composer test:integration
+
+    - name: Run integration tests with coverage
+      if: matrix.php-version == '8.3'
+      run: XDEBUG_MODE=coverage ./vendor/bin/phpunit --testsuite=Integration --coverage-clover coverage-integration.xml
+
+    - name: Upload integration test coverage artifacts
+      if: matrix.php-version == '8.3'
+      uses: actions/upload-artifact@v4
+      with:
+        name: integration-coverage
+        path: coverage-integration.xml
+        retention-days: 1
+
+  codecov:
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests]
+    if: always()
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download unit coverage
+      uses: actions/download-artifact@v4
+      with:
+        name: unit-coverage
+        path: ./
+
+    - name: Download integration coverage
+      uses: actions/download-artifact@v4
+      with:
+        name: integration-coverage
+        path: ./
+
+    - name: Upload unit coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage-unit.xml
+        flags: unittests
+        name: codecov-unit
+        verbose: true
+
+    - name: Upload integration coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage-integration.xml
+        flags: integration
+        name: codecov-integration
+        verbose: true
