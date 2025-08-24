@@ -6,12 +6,11 @@ namespace PortableContent\Repository;
 
 use PortableContent\ContentItem;
 use PortableContent\Contracts\ContentRepositoryInterface;
-use PortableContent\Exception\WeaviateException;
 use Weaviate\WeaviateClient;
 
 /**
  * Weaviate implementation of ContentRepositoryInterface.
- * 
+ *
  * This repository stores ContentItem objects in Weaviate as a single collection
  * with nested block objects, following the aggregate root pattern.
  */
@@ -20,7 +19,9 @@ final class WeaviateContentRepository implements ContentRepositoryInterface
     private const DEFAULT_CLASS_NAME = 'ContentItem';
 
     public function __construct(
+        /** @phpstan-ignore-next-line */
         private readonly WeaviateClient $client,
+        /** @phpstan-ignore-next-line */
         private readonly string $className = self::DEFAULT_CLASS_NAME
     ) {}
 

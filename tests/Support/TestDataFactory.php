@@ -88,24 +88,24 @@ final class TestDataFactory
 
     /**
      * Create multiple ContentItems for testing.
-     * 
+     *
      * @return ContentItem[]
      */
     public static function createMultipleContentItems(int $count = 3): array
     {
         $items = [];
-        
+
         for ($i = 1; $i <= $count; $i++) {
             $items[] = self::createContentItem(
                 type: "type{$i}",
                 title: "Test Article {$i}",
                 summary: "Summary for test article {$i}",
                 blocks: [
-                    self::createMarkdownBlock("# Article {$i}\n\nContent for article {$i}")
+                    self::createMarkdownBlock("# Article {$i}\n\nContent for article {$i}"),
                 ]
             );
         }
-        
+
         return $items;
     }
 
@@ -115,13 +115,13 @@ final class TestDataFactory
     public static function createContentItemWithMultipleBlocks(int $blockCount = 3): ContentItem
     {
         $blocks = [];
-        
+
         for ($i = 1; $i <= $blockCount; $i++) {
             $blocks[] = self::createMarkdownBlock(
                 "# Block {$i}\n\nThis is block {$i} content with some text to test."
             );
         }
-        
+
         return self::createContentItem(
             type: 'multi-block-article',
             title: 'Article with Multiple Blocks',
@@ -146,7 +146,7 @@ final class TestDataFactory
 
     /**
      * Create ContentItems with different types for testing.
-     * 
+     *
      * @return ContentItem[]
      */
     public static function createContentItemsWithDifferentTypes(): array
@@ -166,7 +166,7 @@ final class TestDataFactory
     {
         $largeContent = str_repeat("This is a large block of content. ", 1000);
         $block = self::createMarkdownBlock("# Large Content\n\n{$largeContent}");
-        
+
         return self::createContentItem(
             type: 'large-article',
             title: 'Large Test Article',
@@ -177,13 +177,13 @@ final class TestDataFactory
 
     /**
      * Create ContentItems for date range testing.
-     * 
+     *
      * @return ContentItem[]
      */
     public static function createContentItemsForDateRange(): array
     {
         $baseDate = new \DateTimeImmutable('2024-01-01');
-        
+
         return [
             self::createContentItemWithDate($baseDate, 'January Article'),
             self::createContentItemWithDate($baseDate->modify('+1 month'), 'February Article'),

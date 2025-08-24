@@ -10,7 +10,7 @@ use PortableContent\Tests\Support\TestDataFactory;
 
 /**
  * Integration tests for data mapping between domain objects and Weaviate objects.
- * 
+ *
  * These tests verify that ContentItem and MarkdownBlock objects can be correctly
  * converted to/from Weaviate format while preserving all data integrity.
  */
@@ -21,7 +21,7 @@ class DataMappingIntegrationTest extends WeaviateIntegrationTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->mapper = new WeaviateDataMapper();
     }
 
@@ -38,14 +38,14 @@ class DataMappingIntegrationTest extends WeaviateIntegrationTestCase
         // Act & Assert - Currently expecting RuntimeException since not implemented
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Not implemented yet - this is a stub for testing');
-        
+
         $this->mapper->contentItemToWeaviateObject($content);
     }
 
     public function testWeaviateObjectToContentItemMapping(): void
     {
         // This test will verify reverse mapping from Weaviate to ContentItem
-        
+
         $weaviateObject = [
             'contentId' => 'test-id-123',
             'type' => 'article',
@@ -60,9 +60,9 @@ class DataMappingIntegrationTest extends WeaviateIntegrationTestCase
                     'kind' => 'markdown',
                     'source' => '# Test\n\nContent',
                     'createdAt' => '2024-01-01T10:00:00Z',
-                    'wordCount' => 2
-                ]
-            ]
+                    'wordCount' => 2,
+                ],
+            ],
         ];
 
         // Act & Assert - Currently expecting RuntimeException since not implemented
@@ -73,7 +73,7 @@ class DataMappingIntegrationTest extends WeaviateIntegrationTestCase
     public function testComplexBlockStructureMaintainsIntegrity(): void
     {
         // This test will verify that complex block structures are preserved
-        
+
         $content = TestDataFactory::createContentItemWithMultipleBlocks(3);
 
         // Act & Assert - Currently expecting RuntimeException since not implemented
@@ -84,7 +84,7 @@ class DataMappingIntegrationTest extends WeaviateIntegrationTestCase
     public function testDateTimeHandlingInMapping(): void
     {
         // This test will verify that DateTime objects are correctly handled
-        
+
         $specificDate = new \DateTimeImmutable('2024-06-15T14:30:45Z');
         $content = TestDataFactory::createContentItemWithDate($specificDate);
 
@@ -96,7 +96,7 @@ class DataMappingIntegrationTest extends WeaviateIntegrationTestCase
     public function testEmptyBlocksHandling(): void
     {
         // This test will verify handling of ContentItems with no blocks
-        
+
         $content = TestDataFactory::createContentItem(blocks: []);
 
         // Act & Assert - Currently expecting RuntimeException since not implemented
@@ -107,7 +107,7 @@ class DataMappingIntegrationTest extends WeaviateIntegrationTestCase
     public function testLargeContentMapping(): void
     {
         // This test will verify that large content is handled correctly
-        
+
         $largeContent = TestDataFactory::createLargeContentItem();
 
         // Act & Assert - Currently expecting RuntimeException since not implemented
@@ -118,18 +118,18 @@ class DataMappingIntegrationTest extends WeaviateIntegrationTestCase
     public function testSpecialCharactersInMapping(): void
     {
         // This test will verify that special characters are preserved
-        
+
         $specialContent = TestDataFactory::createContentItem(
             title: 'Title with émojis 🚀 and spëcial chars àáâãäå',
             summary: 'Summary with\nnewlines and\ttabs',
             blocks: [
                 TestDataFactory::createMarkdownBlock(
-                    "# Special Content\n\n" .
-                    "Content with émojis: 🚀🎉🔥\n" .
-                    "Unicode: àáâãäåæçèéêë\n" .
-                    "Symbols: @#$%^&*()_+-=[]{}|;':\",./<>?\n" .
-                    "Newlines and\ttabs"
-                )
+                    "# Special Content\n\n"
+                    . "Content with émojis: 🚀🎉🔥\n"
+                    . "Unicode: àáâãäåæçèéêë\n"
+                    . "Symbols: @#$%^&*()_+-=[]{}|;':\",./<>?\n"
+                    . "Newlines and\ttabs"
+                ),
             ]
         );
 
@@ -141,7 +141,7 @@ class DataMappingIntegrationTest extends WeaviateIntegrationTestCase
     public function testBlockToWeaviateObjectMapping(): void
     {
         // This test will verify individual block mapping
-        
+
         $block = TestDataFactory::createMarkdownBlock(
             '# Block Title\n\nBlock content with **bold** and *italic* text.'
         );
@@ -154,13 +154,13 @@ class DataMappingIntegrationTest extends WeaviateIntegrationTestCase
     public function testWeaviateObjectToBlockMapping(): void
     {
         // This test will verify reverse block mapping
-        
+
         $weaviateBlock = [
             'blockId' => 'block-123',
             'kind' => 'markdown',
             'source' => '# Block Title\n\nBlock content',
             'createdAt' => '2024-01-01T10:00:00Z',
-            'wordCount' => 3
+            'wordCount' => 3,
         ];
 
         // Act & Assert - Currently expecting RuntimeException since not implemented
@@ -171,7 +171,7 @@ class DataMappingIntegrationTest extends WeaviateIntegrationTestCase
     public function testBatchContentItemsMapping(): void
     {
         // This test will verify batch mapping of multiple ContentItems
-        
+
         $contentItems = TestDataFactory::createMultipleContentItems(5);
 
         // Act & Assert - Currently expecting RuntimeException since not implemented
@@ -182,7 +182,7 @@ class DataMappingIntegrationTest extends WeaviateIntegrationTestCase
     public function testBatchWeaviateObjectsMapping(): void
     {
         // This test will verify batch reverse mapping
-        
+
         $weaviateObjects = [
             [
                 'contentId' => 'id-1',
@@ -198,10 +198,10 @@ class DataMappingIntegrationTest extends WeaviateIntegrationTestCase
                         'kind' => 'markdown',
                         'source' => '# Article 1\n\nContent 1',
                         'createdAt' => '2024-01-01T10:00:00Z',
-                        'wordCount' => 3
-                    ]
-                ]
-            ]
+                        'wordCount' => 3,
+                    ],
+                ],
+            ],
         ];
 
         // Act & Assert - Currently expecting RuntimeException since not implemented
@@ -212,7 +212,7 @@ class DataMappingIntegrationTest extends WeaviateIntegrationTestCase
     public function testWeaviateObjectValidation(): void
     {
         // This test will verify that Weaviate object validation works
-        
+
         $validObject = [
             'contentId' => 'test-id',
             'type' => 'article',
@@ -221,7 +221,7 @@ class DataMappingIntegrationTest extends WeaviateIntegrationTestCase
             'createdAt' => '2024-01-01T10:00:00Z',
             'updatedAt' => '2024-01-01T10:00:00Z',
             'blockCount' => 0,
-            'blocks' => []
+            'blocks' => [],
         ];
 
         // Act & Assert - Currently expecting RuntimeException since not implemented
@@ -233,14 +233,14 @@ class DataMappingIntegrationTest extends WeaviateIntegrationTestCase
     {
         // This test will verify that ContentItem -> Weaviate -> ContentItem preserves data
         // This is the most important test for data integrity
-        
+
         $originalContent = TestDataFactory::createContentItem(
             type: 'tutorial',
             title: 'Round Trip Test',
             summary: 'Testing data integrity',
             blocks: [
                 TestDataFactory::createMarkdownBlock('# First Block\n\nFirst content'),
-                TestDataFactory::createMarkdownBlock('# Second Block\n\nSecond content')
+                TestDataFactory::createMarkdownBlock('# Second Block\n\nSecond content'),
             ]
         );
 
@@ -252,7 +252,7 @@ class DataMappingIntegrationTest extends WeaviateIntegrationTestCase
     public function testMappingPreservesMetadata(): void
     {
         // This test will verify that all metadata (IDs, dates, counts) is preserved
-        
+
         $content = TestDataFactory::createContentItem();
 
         // Act & Assert - Currently expecting RuntimeException since not implemented
@@ -263,7 +263,7 @@ class DataMappingIntegrationTest extends WeaviateIntegrationTestCase
     public function testExpectedWeaviateStructure(): void
     {
         // This test will verify the expected structure definition
-        
+
         // Act & Assert - Currently expecting RuntimeException since not implemented
         $this->expectException(\RuntimeException::class);
         $this->mapper->getExpectedWeaviateStructure();

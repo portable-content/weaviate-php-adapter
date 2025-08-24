@@ -50,6 +50,7 @@ final class WeaviateTestHelper
         } catch (\Exception $e) {
             // Log the error for debugging in CI
             error_log("Weaviate availability check failed: " . $e->getMessage());
+
             return false;
         }
     }
@@ -58,9 +59,12 @@ final class WeaviateTestHelper
     {
         if (!self::isWeaviateAvailable()) {
             $connectionInfo = self::getTestConnectionInfo();
+            $baseUrl = isset($connectionInfo['base_url']) && is_string($connectionInfo['base_url'])
+                ? $connectionInfo['base_url']
+                : 'unknown';
 
             throw new \PHPUnit\Framework\SkippedTestSuiteError(
-                "Weaviate is not available at {$connectionInfo['base_url']}. "
+                "Weaviate is not available at {$baseUrl}. "
                 . "Please start Weaviate server for integration tests using: "
                 . "docker-compose -f docker-compose.test.yml up -d"
             );

@@ -11,7 +11,7 @@ use Weaviate\WeaviateClient;
 
 /**
  * Base class for Weaviate integration tests.
- * 
+ *
  * Provides common setup, teardown, and utilities for tests that require
  * a real Weaviate instance.
  */
@@ -24,22 +24,22 @@ abstract class WeaviateIntegrationTestCase extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Skip test if Weaviate is not available
         WeaviateTestHelper::skipIfWeaviateUnavailable();
-        
+
         // Get unique test class name for this test
         $this->testClassName = WeaviateTestHelper::getTestClassName();
-        
+
         // Get Weaviate client
         $this->client = WeaviateTestHelper::getClient();
-        
+
         // Create schema manager
         $this->schemaManager = new WeaviateSchemaManager($this->client, $this->testClassName);
-        
+
         // Clean up any existing schema
         $this->cleanupTestSchema();
-        
+
         // Wait for consistency
         WeaviateTestHelper::waitForSchemaConsistency();
     }
@@ -48,7 +48,7 @@ abstract class WeaviateIntegrationTestCase extends TestCase
     {
         // Clean up test schema
         $this->cleanupTestSchema();
-        
+
         parent::tearDown();
     }
 
@@ -102,7 +102,7 @@ abstract class WeaviateIntegrationTestCase extends TestCase
 
     /**
      * Get connection info for debugging.
-     * 
+     *
      * @return array<string, mixed>
      */
     protected function getConnectionInfo(): array
@@ -116,15 +116,15 @@ abstract class WeaviateIntegrationTestCase extends TestCase
     protected function waitForWeaviate(int $maxWaitSeconds = 30): void
     {
         $start = time();
-        
+
         while ((time() - $start) < $maxWaitSeconds) {
             if (WeaviateTestHelper::isWeaviateAvailable()) {
                 return;
             }
-            
+
             sleep(1);
         }
-        
+
         $this->fail('Weaviate did not become available within the timeout period');
     }
 
@@ -146,7 +146,7 @@ abstract class WeaviateIntegrationTestCase extends TestCase
         $output = [];
         $returnCode = 0;
         exec('docker --version 2>/dev/null', $output, $returnCode);
-        
+
         return $returnCode === 0;
     }
 }

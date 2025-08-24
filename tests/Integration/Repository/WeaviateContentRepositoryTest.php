@@ -10,7 +10,7 @@ use PortableContent\Tests\Support\TestDataFactory;
 
 /**
  * Integration tests for WeaviateContentRepository CRUD operations.
- * 
+ *
  * These tests run against a real Weaviate instance and verify that
  * the repository correctly implements all ContentRepositoryInterface methods.
  */
@@ -21,10 +21,10 @@ class WeaviateContentRepositoryTest extends WeaviateIntegrationTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Create repository instance
         $this->repository = new WeaviateContentRepository($this->client, $this->testClassName);
-        
+
         // Create test schema
         $this->createTestSchema();
     }
@@ -41,7 +41,7 @@ class WeaviateContentRepositoryTest extends WeaviateIntegrationTestCase
         // Act & Assert - Currently expecting RuntimeException since not implemented
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Not implemented yet - this is a stub for testing');
-        
+
         $this->repository->save($content);
     }
 
@@ -49,7 +49,7 @@ class WeaviateContentRepositoryTest extends WeaviateIntegrationTestCase
     {
         // This test will verify that saving an existing ContentItem updates it
         // rather than creating a duplicate
-        
+
         $content = TestDataFactory::createContentItem(
             type: 'article',
             title: 'Original Title'
@@ -70,7 +70,7 @@ class WeaviateContentRepositoryTest extends WeaviateIntegrationTestCase
     public function testFindAllWithPagination(): void
     {
         // This test will verify pagination works correctly
-        
+
         // Act & Assert - Currently expecting RuntimeException since not implemented
         $this->expectException(\RuntimeException::class);
         $this->repository->findAll(limit: 10, offset: 0);
@@ -79,7 +79,7 @@ class WeaviateContentRepositoryTest extends WeaviateIntegrationTestCase
     public function testFindAllWithEmptyRepository(): void
     {
         // This test will verify that findAll returns empty array when no content exists
-        
+
         // Act & Assert - Currently expecting RuntimeException since not implemented
         $this->expectException(\RuntimeException::class);
         $result = $this->repository->findAll();
@@ -88,7 +88,7 @@ class WeaviateContentRepositoryTest extends WeaviateIntegrationTestCase
     public function testDeleteRemovesContent(): void
     {
         // This test will verify that delete actually removes content
-        
+
         $content = TestDataFactory::createContentItem();
 
         // Act & Assert - Currently expecting RuntimeException since not implemented
@@ -99,7 +99,7 @@ class WeaviateContentRepositoryTest extends WeaviateIntegrationTestCase
     public function testDeleteNonExistentContentDoesNotThrow(): void
     {
         // This test will verify that deleting non-existent content doesn't throw
-        
+
         // Act & Assert - Currently expecting RuntimeException since not implemented
         $this->expectException(\RuntimeException::class);
         $this->repository->delete('non-existent-id');
@@ -109,7 +109,7 @@ class WeaviateContentRepositoryTest extends WeaviateIntegrationTestCase
     {
         // This test will verify that complex ContentItems with multiple blocks
         // are saved and retrieved correctly
-        
+
         $content = TestDataFactory::createContentItemWithMultipleBlocks(3);
 
         // Act & Assert - Currently expecting RuntimeException since not implemented
@@ -121,7 +121,7 @@ class WeaviateContentRepositoryTest extends WeaviateIntegrationTestCase
     {
         // This test will verify that all ContentItem properties are preserved
         // including dates, IDs, and nested block properties
-        
+
         $createdAt = new \DateTimeImmutable('2024-01-01 10:00:00');
         $content = TestDataFactory::createContentItem(
             type: 'documentation',
@@ -139,7 +139,7 @@ class WeaviateContentRepositoryTest extends WeaviateIntegrationTestCase
     {
         // This test will verify that concurrent save operations work correctly
         // and don't interfere with each other
-        
+
         $content1 = TestDataFactory::createContentItem(title: 'Content 1');
         $content2 = TestDataFactory::createContentItem(title: 'Content 2');
 
@@ -151,7 +151,7 @@ class WeaviateContentRepositoryTest extends WeaviateIntegrationTestCase
     public function testSaveWithEmptyBlocks(): void
     {
         // This test will verify handling of ContentItems with no blocks
-        
+
         $content = TestDataFactory::createContentItem(blocks: []);
 
         // Act & Assert - Currently expecting RuntimeException since not implemented
@@ -162,7 +162,7 @@ class WeaviateContentRepositoryTest extends WeaviateIntegrationTestCase
     public function testFindByIdWithSpecialCharacters(): void
     {
         // This test will verify that IDs with special characters work correctly
-        
+
         // Act & Assert - Currently expecting RuntimeException since not implemented
         $this->expectException(\RuntimeException::class);
         $this->repository->findById('id-with-special-chars-àáâ-🚀');
