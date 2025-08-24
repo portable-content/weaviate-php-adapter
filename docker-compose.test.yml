@@ -13,16 +13,29 @@ services:
       DEFAULT_VECTORIZER_MODULE: 'none'
       CLUSTER_HOSTNAME: 'node1'
       ENABLE_MODULES: ''
-      LOG_LEVEL: 'info'
+      LOG_LEVEL: 'warning'  # Reduce log verbosity
+      DISABLE_TELEMETRY: 'true'
+      ASYNC_INDEXING: 'false'  # Disable async indexing for tests
+      LIMIT_RESOURCES: 'true'  # Enable resource limits for CI
+      GOMAXPROCS: '2'  # Limit CPU usage
     volumes:
       - weaviate_test_data:/var/lib/weaviate
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/v1/.well-known/ready"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 45s
     restart: unless-stopped
+    # Add resource limits for CI
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
 
 volumes:
   weaviate_test_data:

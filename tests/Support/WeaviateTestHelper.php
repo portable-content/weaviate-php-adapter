@@ -42,11 +42,14 @@ final class WeaviateTestHelper
     {
         try {
             $client = self::getClient();
+
             // Try to get schema to test connectivity
             $client->schema()->get();
 
             return true;
-        } catch (\Exception) {
+        } catch (\Exception $e) {
+            // Log the error for debugging in CI
+            error_log("Weaviate availability check failed: " . $e->getMessage());
             return false;
         }
     }
@@ -79,7 +82,7 @@ final class WeaviateTestHelper
         }
     }
 
-    public static function waitForSchemaConsistency(int $maxWaitSeconds = 5): void
+    public static function waitForSchemaConsistency(int $maxWaitSeconds = 10): void
     {
         $start = time();
 
@@ -89,11 +92,13 @@ final class WeaviateTestHelper
                 $client->schema()->get();
 
                 // Small delay to ensure consistency
-                usleep(100000); // 100ms
+                usleep(500000); // 500ms
 
                 return;
-            } catch (\Exception) {
-                usleep(200000); // 200ms
+            } catch (\Exception $e) {
+                // Log for debugging
+                error_log("Schema consistency check failed: " . $e->getMessage());
+                sleep(1); // Wait 1 second before retry
             }
         }
     }

@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 # Configuration
 COMPOSE_FILE="docker-compose.test.yml"
 WEAVIATE_URL="http://localhost:8082"
-MAX_WAIT_TIME=60
+MAX_WAIT_TIME=120  # Increased wait time for CI
 
 echo -e "${GREEN}🚀 Starting Weaviate PHP Adapter Integration Tests${NC}"
 
@@ -31,13 +31,23 @@ wait_for_weaviate() {
     while ! check_weaviate_ready "$WEAVIATE_URL"; do
         if [ $count -ge $MAX_WAIT_TIME ]; then
             echo -e "${RED}❌ Weaviate failed to start within $MAX_WAIT_TIME seconds${NC}"
+            echo -e "${YELLOW}Checking Weaviate logs...${NC}"
+            $DOCKER_COMPOSE -f "$COMPOSE_FILE" logs weaviate-test || true
             return 1
         fi
-        sleep 2
-        count=$((count + 2))
-        echo -n "."
+        sleep 3  # Increased sleep time
+        count=$((count + 3))
+        if [ $((count % 15)) -eq 0 ]; then
+            echo -e "\n${YELLOW}Still waiting... ($count/${MAX_WAIT_TIME}s)${NC}"
+        else
+            echo -n "."
+        fi
     done
     echo -e "\n${GREEN}✅ Weaviate is ready!${NC}"
+
+    # Additional wait to ensure full readiness
+    echo -e "${YELLOW}Waiting additional 5 seconds for full readiness...${NC}"
+    sleep 5
 }
 
 # Function to cleanup
