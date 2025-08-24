@@ -55,9 +55,10 @@ final class WeaviateTestHelper
     {
         if (!self::isWeaviateAvailable()) {
             $port = getenv('CI') === 'true' ? '8080' : '8082';
+
             throw new \Exception(
-                "Weaviate is not available on localhost:{$port}. " .
-                "Please start Weaviate server for integration tests."
+                "Weaviate is not available on localhost:{$port}. "
+                . "Please start Weaviate server for integration tests."
             );
         }
     }
