@@ -28,7 +28,9 @@ final class WeaviateTestHelper
     {
         if (null === self::$client) {
             $host = $_ENV['WEAVIATE_TEST_HOST'] ?? 'localhost';
-            $port = $_ENV['WEAVIATE_TEST_PORT'] ?? '8082';
+            // Use port 8080 in CI, 8082 locally (to avoid conflicts with local Weaviate)
+            $defaultPort = getenv('CI') === 'true' ? '8080' : '8082';
+            $port = $_ENV['WEAVIATE_TEST_PORT'] ?? $defaultPort;
 
             self::$client = WeaviateClient::connectToLocal($host . ':' . $port);
         }
@@ -52,8 +54,10 @@ final class WeaviateTestHelper
     public static function skipIfWeaviateUnavailable(): void
     {
         if (!self::isWeaviateAvailable()) {
+            $port = getenv('CI') === 'true' ? '8080' : '8082';
             throw new \Exception(
-                'Weaviate is not available. Please start Weaviate server for integration tests.'
+                "Weaviate is not available on localhost:{$port}. " .
+                "Please start Weaviate server for integration tests."
             );
         }
     }
@@ -120,7 +124,9 @@ final class WeaviateTestHelper
     public static function getTestConnectionInfo(): array
     {
         $host = $_ENV['WEAVIATE_TEST_HOST'] ?? 'localhost';
-        $port = $_ENV['WEAVIATE_TEST_PORT'] ?? '8082';
+        // Use port 8080 in CI, 8082 locally (to avoid conflicts with local Weaviate)
+        $defaultPort = getenv('CI') === 'true' ? '8080' : '8082';
+        $port = $_ENV['WEAVIATE_TEST_PORT'] ?? $defaultPort;
         $scheme = $_ENV['WEAVIATE_TEST_SCHEME'] ?? 'http';
 
         return [
