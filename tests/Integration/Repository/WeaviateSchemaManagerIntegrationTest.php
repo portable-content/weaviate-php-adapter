@@ -6,34 +6,17 @@ namespace PortableContent\Tests\Integration\Repository;
 
 use PortableContent\Exception\WeaviateException;
 use PortableContent\Repository\WeaviateSchemaManager;
-use PortableContent\Tests\Integration\IntegrationTestCase;
+use PortableContent\Tests\Integration\WeaviateIntegrationTestCase;
 use PortableContent\Tests\Support\WeaviateTestHelper;
 
-final class WeaviateSchemaManagerIntegrationTest extends IntegrationTestCase
+/**
+ * Integration tests for WeaviateSchemaManager.
+ *
+ * These tests verify schema creation, validation, and management
+ * operations against a real Weaviate instance.
+ */
+final class WeaviateSchemaManagerIntegrationTest extends WeaviateIntegrationTestCase
 {
-    private string $testClassName;
-    private WeaviateSchemaManager $schemaManager;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        WeaviateTestHelper::skipIfWeaviateUnavailable();
-
-        $this->testClassName = WeaviateTestHelper::getTestClassName();
-        $client = WeaviateTestHelper::getClient();
-        $this->schemaManager = new WeaviateSchemaManager($client, $this->testClassName);
-
-        // Clean up any existing schema
-        WeaviateTestHelper::cleanupSchema($this->testClassName);
-    }
-
-    protected function tearDown(): void
-    {
-        WeaviateTestHelper::cleanupSchema($this->testClassName);
-        parent::tearDown();
-    }
-
     public function testCreateSchemaSuccess(): void
     {
         $this->assertFalse($this->schemaManager->schemaExists());

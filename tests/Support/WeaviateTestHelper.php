@@ -54,11 +54,12 @@ final class WeaviateTestHelper
     public static function skipIfWeaviateUnavailable(): void
     {
         if (!self::isWeaviateAvailable()) {
-            $port = getenv('CI') === 'true' ? '8080' : '8082';
+            $connectionInfo = self::getTestConnectionInfo();
 
-            throw new \Exception(
-                "Weaviate is not available on localhost:{$port}. "
-                . "Please start Weaviate server for integration tests."
+            throw new \PHPUnit\Framework\SkippedTestSuiteError(
+                "Weaviate is not available at {$connectionInfo['base_url']}. "
+                . "Please start Weaviate server for integration tests using: "
+                . "docker-compose -f docker-compose.test.yml up -d"
             );
         }
     }

@@ -55,6 +55,24 @@ Integration tests require a running Weaviate instance.
 Start Weaviate using Docker:
 
 ```bash
+# Start test Weaviate instance
+docker-compose -f docker-compose.test.yml up -d
+
+# Wait for Weaviate to be ready
+curl -f http://localhost:8082/v1/.well-known/ready
+
+# Run integration tests
+composer test:integration
+
+# Stop test Weaviate instance
+docker-compose -f docker-compose.test.yml down
+```
+
+#### Option 2: Local Weaviate Instance
+
+If you have a local Weaviate instance running:
+
+```bash
 # Start Weaviate with Docker
 docker run -d \
   --name weaviate-test \

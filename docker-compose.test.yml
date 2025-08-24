@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  weaviate-test:
+    image: semitechnologies/weaviate:1.25.0
+    container_name: weaviate-test
+    ports:
+      - "8082:8080"  # Use 8082 to avoid conflicts with local Weaviate
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      DEFAULT_VECTORIZER_MODULE: 'none'
+      CLUSTER_HOSTNAME: 'node1'
+      ENABLE_MODULES: ''
+      LOG_LEVEL: 'info'
+    volumes:
+      - weaviate_test_data:/var/lib/weaviate
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/.well-known/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  weaviate_test_data:
+    driver: local
