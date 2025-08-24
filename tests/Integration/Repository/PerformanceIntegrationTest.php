@@ -139,7 +139,7 @@ class PerformanceIntegrationTest extends WeaviateIntegrationTestCase
         $this->expectException(\RuntimeException::class);
         
         foreach ($contentItems as $content) {
-            $this->repository->delete($content->id);
+            $this->repository->delete($content->getId());
         }
     }
 

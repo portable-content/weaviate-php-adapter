@@ -93,7 +93,7 @@ class WeaviateContentRepositoryTest extends WeaviateIntegrationTestCase
 
         // Act & Assert - Currently expecting RuntimeException since not implemented
         $this->expectException(\RuntimeException::class);
-        $this->repository->delete($content->id);
+        $this->repository->delete($content->getId());
     }
 
     public function testDeleteNonExistentContentDoesNotThrow(): void

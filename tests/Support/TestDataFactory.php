@@ -21,32 +21,25 @@ final class TestDataFactory
         ?\DateTimeImmutable $createdAt = null
     ): MarkdownBlock {
         $source ??= "# Test Content\n\nThis is test markdown content for testing purposes.";
-        
+
+        // Create block normally first
         $block = MarkdownBlock::create($source);
-        
-        if ($id !== null || $createdAt !== null) {
-            // Use reflection to set private properties for testing
-            $reflection = new \ReflectionClass($block);
-            
-            if ($id !== null) {
-                $idProperty = $reflection->getProperty('id');
-                $idProperty->setAccessible(true);
-                $idProperty->setValue($block, $id);
-            }
-            
-            if ($createdAt !== null) {
-                $createdAtProperty = $reflection->getProperty('createdAt');
-                $createdAtProperty->setAccessible(true);
-                $createdAtProperty->setValue($block, $createdAt);
-            }
+
+        // Now we can use setter methods to customize properties if needed
+        if ($id !== null) {
+            $block->setId($id);
         }
-        
+
+        if ($createdAt !== null) {
+            $block->setCreatedAt($createdAt);
+        }
+
         return $block;
     }
 
     /**
      * Create a ContentItem for testing.
-     * 
+     *
      * @param MarkdownBlock[]|null $blocks
      */
     public static function createContentItem(
@@ -62,32 +55,34 @@ final class TestDataFactory
         $title ??= 'Test Article';
         $summary ??= 'This is a test article summary';
         $blocks ??= [self::createMarkdownBlock()];
-        
+
+        // Create ContentItem normally first
         $contentItem = ContentItem::create($type, $title, $summary, $blocks);
-        
+
+        // For immutable properties (id, createdAt, updatedAt), we still need reflection
+        // since these don't have setter methods (by design)
         if ($id !== null || $createdAt !== null || $updatedAt !== null) {
-            // Use reflection to set private properties for testing
             $reflection = new \ReflectionClass($contentItem);
-            
+
             if ($id !== null) {
                 $idProperty = $reflection->getProperty('id');
                 $idProperty->setAccessible(true);
                 $idProperty->setValue($contentItem, $id);
             }
-            
+
             if ($createdAt !== null) {
                 $createdAtProperty = $reflection->getProperty('createdAt');
                 $createdAtProperty->setAccessible(true);
                 $createdAtProperty->setValue($contentItem, $createdAt);
             }
-            
+
             if ($updatedAt !== null) {
                 $updatedAtProperty = $reflection->getProperty('updatedAt');
                 $updatedAtProperty->setAccessible(true);
                 $updatedAtProperty->setValue($contentItem, $updatedAt);
             }
         }
-        
+
         return $contentItem;
     }
 
