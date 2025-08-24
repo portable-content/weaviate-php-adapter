@@ -17,8 +17,7 @@ final class WeaviateSchemaManager
     public function __construct(
         private readonly WeaviateClient $client,
         private readonly string $className = self::DEFAULT_CLASS_NAME
-    ) {
-    }
+    ) {}
 
     /**
      * Create the ContentItem schema in Weaviate.
@@ -66,7 +65,7 @@ final class WeaviateSchemaManager
      */
     public function schemaExists(?string $className = null): bool
     {
-        $className = $className ?? $this->className;
+        $className ??= $this->className;
 
         try {
             return $this->client->schema()->exists($className);
@@ -96,6 +95,8 @@ final class WeaviateSchemaManager
 
     /**
      * Get the current schema for the ContentItem class.
+     *
+     * @return array<string, mixed>|null
      */
     public function getSchema(): ?array
     {
@@ -112,6 +113,8 @@ final class WeaviateSchemaManager
 
     /**
      * Build the ContentItem schema definition.
+     *
+     * @return array<string, mixed>
      */
     private function buildContentItemSchema(): array
     {
@@ -165,6 +168,9 @@ final class WeaviateSchemaManager
 
     /**
      * Compare two schemas to check if they match.
+     *
+     * @param array<string, mixed> $existingSchema
+     * @param array<string, mixed> $expectedSchema
      */
     private function compareSchemas(array $existingSchema, array $expectedSchema): bool
     {
@@ -177,6 +183,10 @@ final class WeaviateSchemaManager
         $existingProps = $existingSchema['properties'] ?? [];
         $expectedProps = $expectedSchema['properties'] ?? [];
 
+        if (!is_array($existingProps) || !is_array($expectedProps)) {
+            return false;
+        }
+
         if (count($existingProps) !== count($expectedProps)) {
             return false;
         }
@@ -184,19 +194,30 @@ final class WeaviateSchemaManager
         // Create lookup arrays for easier comparison
         $existingPropsMap = [];
         foreach ($existingProps as $prop) {
+            if (!is_array($prop) || !isset($prop['name'])) {
+                return false;
+            }
             $existingPropsMap[$prop['name']] = $prop;
         }
 
         foreach ($expectedProps as $expectedProp) {
+            if (!is_array($expectedProp) || !isset($expectedProp['name'])) {
+                return false;
+            }
+
             $name = $expectedProp['name'];
-            
+
             if (!isset($existingPropsMap[$name])) {
                 return false;
             }
 
             $existingProp = $existingPropsMap[$name];
-            
+
             // Check data types
+            if (!isset($existingProp['dataType']) || !isset($expectedProp['dataType'])) {
+                return false;
+            }
+
             if ($existingProp['dataType'] !== $expectedProp['dataType']) {
                 return false;
             }

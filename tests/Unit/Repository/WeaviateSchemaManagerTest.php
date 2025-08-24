@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace PortableContent\Tests\Unit\Repository;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use PortableContent\Exception\WeaviateException;
 use PortableContent\Repository\WeaviateSchemaManager;
 use PortableContent\Tests\TestCase;
-use PHPUnit\Framework\MockObject\MockObject;
-use Weaviate\WeaviateClient;
 use Weaviate\Schema\Schema;
+use Weaviate\WeaviateClient;
 
 final class WeaviateSchemaManagerTest extends TestCase
 {
@@ -30,7 +30,7 @@ final class WeaviateSchemaManagerTest extends TestCase
     {
         $schemaMock = $this->createMock(Schema::class);
 
-        $this->client->expects($this->once())
+        $this->client->expects($this->exactly(2))
             ->method('schema')
             ->willReturn($schemaMock);
 
@@ -56,19 +56,16 @@ final class WeaviateSchemaManagerTest extends TestCase
     public function testCreateSchemaAlreadyExists(): void
     {
         $schemaMock = $this->createMock(\Weaviate\Schema\Schema::class);
-        
+
         $this->client->expects($this->once())
             ->method('schema')
             ->willReturn($schemaMock);
 
         // Schema exists
         $schemaMock->expects($this->once())
-            ->method('get')
-            ->willReturn([
-                'classes' => [
-                    ['class' => 'TestContentItem']
-                ]
-            ]);
+            ->method('exists')
+            ->with(self::TEST_CLASS_NAME)
+            ->willReturn(true);
 
         $this->expectException(WeaviateException::class);
         $this->expectExceptionMessage('Schema for class "TestContentItem" already exists');
@@ -79,23 +76,24 @@ final class WeaviateSchemaManagerTest extends TestCase
     public function testCreateSchemaFailure(): void
     {
         $schemaMock = $this->createMock(\Weaviate\Schema\Schema::class);
-        
-        $this->client->expects($this->once())
+
+        $this->client->expects($this->exactly(2))
             ->method('schema')
             ->willReturn($schemaMock);
 
         // Schema doesn't exist
         $schemaMock->expects($this->once())
-            ->method('get')
-            ->willReturn(['classes' => []]);
+            ->method('exists')
+            ->with(self::TEST_CLASS_NAME)
+            ->willReturn(false);
 
         // Create fails
         $schemaMock->expects($this->once())
             ->method('create')
-            ->willReturn(false);
+            ->willThrowException(new \Exception('Connection failed'));
 
         $this->expectException(WeaviateException::class);
-        $this->expectExceptionMessage('Failed to create schema for class "TestContentItem": Unknown error');
+        $this->expectExceptionMessage('Failed to create schema for class "TestContentItem": Connection failed');
 
         $this->schemaManager->createSchema();
     }
@@ -103,24 +101,21 @@ final class WeaviateSchemaManagerTest extends TestCase
     public function testDeleteSchemaSuccess(): void
     {
         $schemaMock = $this->createMock(\Weaviate\Schema\Schema::class);
-        
-        $this->client->expects($this->once())
+
+        $this->client->expects($this->exactly(2))
             ->method('schema')
             ->willReturn($schemaMock);
 
         // Schema exists
         $schemaMock->expects($this->once())
-            ->method('get')
-            ->willReturn([
-                'classes' => [
-                    ['class' => 'TestContentItem']
-                ]
-            ]);
+            ->method('exists')
+            ->with(self::TEST_CLASS_NAME)
+            ->willReturn(true);
 
         // Delete succeeds
         $schemaMock->expects($this->once())
             ->method('delete')
-            ->with('TestContentItem')
+            ->with(self::TEST_CLASS_NAME)
             ->willReturn(true);
 
         $this->schemaManager->deleteSchema();
@@ -129,15 +124,16 @@ final class WeaviateSchemaManagerTest extends TestCase
     public function testDeleteSchemaNotExists(): void
     {
         $schemaMock = $this->createMock(\Weaviate\Schema\Schema::class);
-        
+
         $this->client->expects($this->once())
             ->method('schema')
             ->willReturn($schemaMock);
 
         // Schema doesn't exist
         $schemaMock->expects($this->once())
-            ->method('get')
-            ->willReturn(['classes' => []]);
+            ->method('exists')
+            ->with(self::TEST_CLASS_NAME)
+            ->willReturn(false);
 
         // Delete should not be called
         $schemaMock->expects($this->never())
@@ -149,19 +145,15 @@ final class WeaviateSchemaManagerTest extends TestCase
     public function testSchemaExistsTrue(): void
     {
         $schemaMock = $this->createMock(\Weaviate\Schema\Schema::class);
-        
+
         $this->client->expects($this->once())
             ->method('schema')
             ->willReturn($schemaMock);
 
         $schemaMock->expects($this->once())
-            ->method('get')
-            ->willReturn([
-                'classes' => [
-                    ['class' => 'TestContentItem'],
-                    ['class' => 'OtherClass']
-                ]
-            ]);
+            ->method('exists')
+            ->with(self::TEST_CLASS_NAME)
+            ->willReturn(true);
 
         $this->assertTrue($this->schemaManager->schemaExists());
     }
@@ -169,18 +161,15 @@ final class WeaviateSchemaManagerTest extends TestCase
     public function testSchemaExistsFalse(): void
     {
         $schemaMock = $this->createMock(\Weaviate\Schema\Schema::class);
-        
+
         $this->client->expects($this->once())
             ->method('schema')
             ->willReturn($schemaMock);
 
         $schemaMock->expects($this->once())
-            ->method('get')
-            ->willReturn([
-                'classes' => [
-                    ['class' => 'OtherClass']
-                ]
-            ]);
+            ->method('exists')
+            ->with(self::TEST_CLASS_NAME)
+            ->willReturn(false);
 
         $this->assertFalse($this->schemaManager->schemaExists());
     }
@@ -188,18 +177,15 @@ final class WeaviateSchemaManagerTest extends TestCase
     public function testSchemaExistsWithCustomClassName(): void
     {
         $schemaMock = $this->createMock(\Weaviate\Schema\Schema::class);
-        
+
         $this->client->expects($this->once())
             ->method('schema')
             ->willReturn($schemaMock);
 
         $schemaMock->expects($this->once())
-            ->method('get')
-            ->willReturn([
-                'classes' => [
-                    ['class' => 'CustomClass']
-                ]
-            ]);
+            ->method('exists')
+            ->with('CustomClass')
+            ->willReturn(true);
 
         $this->assertTrue($this->schemaManager->schemaExists('CustomClass'));
     }
@@ -207,31 +193,34 @@ final class WeaviateSchemaManagerTest extends TestCase
     public function testValidateSchemaSuccess(): void
     {
         $schemaMock = $this->createMock(\Weaviate\Schema\Schema::class);
-        
-        $this->client->expects($this->once())
+
+        $this->client->expects($this->exactly(2))
             ->method('schema')
             ->willReturn($schemaMock);
 
+        // First check if schema exists
+        $schemaMock->expects($this->once())
+            ->method('exists')
+            ->with(self::TEST_CLASS_NAME)
+            ->willReturn(true);
+
         $existingSchema = [
-            'classes' => [
-                [
-                    'class' => 'TestContentItem',
-                    'properties' => [
-                        ['name' => 'contentId', 'dataType' => ['text']],
-                        ['name' => 'type', 'dataType' => ['text']],
-                        ['name' => 'title', 'dataType' => ['text']],
-                        ['name' => 'summary', 'dataType' => ['text']],
-                        ['name' => 'createdAt', 'dataType' => ['date']],
-                        ['name' => 'updatedAt', 'dataType' => ['date']],
-                        ['name' => 'blockCount', 'dataType' => ['int']],
-                        ['name' => 'blocks', 'dataType' => ['object[]']],
-                    ]
-                ]
-            ]
+            'class' => 'TestContentItem',
+            'properties' => [
+                ['name' => 'contentId', 'dataType' => ['text']],
+                ['name' => 'type', 'dataType' => ['text']],
+                ['name' => 'title', 'dataType' => ['text']],
+                ['name' => 'summary', 'dataType' => ['text']],
+                ['name' => 'createdAt', 'dataType' => ['date']],
+                ['name' => 'updatedAt', 'dataType' => ['date']],
+                ['name' => 'blockCount', 'dataType' => ['int']],
+                ['name' => 'blocks', 'dataType' => ['text']],
+            ],
         ];
 
         $schemaMock->expects($this->once())
             ->method('get')
+            ->with(self::TEST_CLASS_NAME)
             ->willReturn($existingSchema);
 
         $this->assertTrue($this->schemaManager->validateSchema());
@@ -240,14 +229,15 @@ final class WeaviateSchemaManagerTest extends TestCase
     public function testValidateSchemaNotFound(): void
     {
         $schemaMock = $this->createMock(\Weaviate\Schema\Schema::class);
-        
+
         $this->client->expects($this->once())
             ->method('schema')
             ->willReturn($schemaMock);
 
         $schemaMock->expects($this->once())
-            ->method('get')
-            ->willReturn(['classes' => []]);
+            ->method('exists')
+            ->with(self::TEST_CLASS_NAME)
+            ->willReturn(false);
 
         $this->expectException(WeaviateException::class);
         $this->expectExceptionMessage('Schema for class "TestContentItem" not found');
@@ -258,21 +248,26 @@ final class WeaviateSchemaManagerTest extends TestCase
     public function testGetSchemaSuccess(): void
     {
         $schemaMock = $this->createMock(\Weaviate\Schema\Schema::class);
-        
-        $this->client->expects($this->once())
+
+        $this->client->expects($this->exactly(2))
             ->method('schema')
             ->willReturn($schemaMock);
 
+        // First check if schema exists
+        $schemaMock->expects($this->once())
+            ->method('exists')
+            ->with(self::TEST_CLASS_NAME)
+            ->willReturn(true);
+
         $expectedClass = [
             'class' => 'TestContentItem',
-            'properties' => []
+            'properties' => [],
         ];
 
         $schemaMock->expects($this->once())
             ->method('get')
-            ->willReturn([
-                'classes' => [$expectedClass]
-            ]);
+            ->with(self::TEST_CLASS_NAME)
+            ->willReturn($expectedClass);
 
         $result = $this->schemaManager->getSchema();
 
@@ -282,14 +277,15 @@ final class WeaviateSchemaManagerTest extends TestCase
     public function testGetSchemaNotFound(): void
     {
         $schemaMock = $this->createMock(\Weaviate\Schema\Schema::class);
-        
+
         $this->client->expects($this->once())
             ->method('schema')
             ->willReturn($schemaMock);
 
         $schemaMock->expects($this->once())
-            ->method('get')
-            ->willReturn(['classes' => []]);
+            ->method('exists')
+            ->with(self::TEST_CLASS_NAME)
+            ->willReturn(false);
 
         $result = $this->schemaManager->getSchema();
 

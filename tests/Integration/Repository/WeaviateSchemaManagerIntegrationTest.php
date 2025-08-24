@@ -103,16 +103,19 @@ final class WeaviateSchemaManagerIntegrationTest extends IntegrationTestCase
 
         $schema = $this->schemaManager->getSchema();
 
+        $this->assertNotNull($schema);
         $this->assertIsArray($schema);
         $this->assertSame($this->testClassName, $schema['class']);
         $this->assertArrayHasKey('properties', $schema);
-        $this->assertIsArray($schema['properties']);
+
+        $properties = $schema['properties'];
+        $this->assertIsArray($properties);
 
         // Check that all expected properties exist
-        $propertyNames = array_column($schema['properties'], 'name');
+        $propertyNames = array_column($properties, 'name');
         $expectedProperties = [
             'contentId', 'type', 'title', 'summary',
-            'createdAt', 'updatedAt', 'blockCount', 'blocks'
+            'createdAt', 'updatedAt', 'blockCount', 'blocks',
         ];
 
         foreach ($expectedProperties as $expectedProperty) {
@@ -153,17 +156,22 @@ final class WeaviateSchemaManagerIntegrationTest extends IntegrationTestCase
         $schema = $this->schemaManager->getSchema();
 
         // Verify schema structure
+        $this->assertNotNull($schema);
+        $this->assertIsArray($schema);
         $this->assertArrayHasKey('class', $schema);
         $this->assertArrayHasKey('properties', $schema);
         $this->assertArrayHasKey('description', $schema);
 
         // Verify properties
         $properties = $schema['properties'];
+        $this->assertIsArray($properties);
         $this->assertCount(8, $properties);
 
         // Check specific property structures
         $propertyMap = [];
         foreach ($properties as $property) {
+            $this->assertIsArray($property);
+            $this->assertArrayHasKey('name', $property);
             $propertyMap[$property['name']] = $property;
         }
 

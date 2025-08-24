@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace PortableContent\Exception;
 
-use PortableContent\Exception\RepositoryException;
-
 /**
  * Exception thrown when Weaviate operations fail.
  */

@@ -52,7 +52,7 @@ final class WeaviateTestHelper
     public static function skipIfWeaviateUnavailable(): void
     {
         if (!self::isWeaviateAvailable()) {
-            throw new \PHPUnit\Framework\SkippedTestError(
+            throw new \Exception(
                 'Weaviate is not available. Please start Weaviate server for integration tests.'
             );
         }
@@ -60,7 +60,7 @@ final class WeaviateTestHelper
 
     public static function cleanupSchema(?string $className = null): void
     {
-        $className = $className ?? self::getTestClassName();
+        $className ??= self::getTestClassName();
         $client = self::getClient();
 
         try {
@@ -76,15 +76,15 @@ final class WeaviateTestHelper
     public static function waitForSchemaConsistency(int $maxWaitSeconds = 5): void
     {
         $start = time();
-        
+
         while ((time() - $start) < $maxWaitSeconds) {
             try {
                 $client = self::getClient();
                 $client->schema()->get();
-                
+
                 // Small delay to ensure consistency
                 usleep(100000); // 100ms
-                
+
                 return;
             } catch (\Exception) {
                 usleep(200000); // 200ms
@@ -94,7 +94,7 @@ final class WeaviateTestHelper
 
     public static function createTestSchema(?string $className = null): WeaviateSchemaManager
     {
-        $className = $className ?? self::getTestClassName();
+        $className ??= self::getTestClassName();
         $client = self::getClient();
 
         $schemaManager = new WeaviateSchemaManager($client, $className);
@@ -114,6 +114,9 @@ final class WeaviateTestHelper
         return $schemaManager;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public static function getTestConnectionInfo(): array
     {
         $host = $_ENV['WEAVIATE_TEST_HOST'] ?? 'localhost';
